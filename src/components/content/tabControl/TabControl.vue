@@ -27,7 +27,9 @@
     },
     methods: {
       itemClick(index) {
-        this.currentIndex = index
+        this.currentIndex = index;
+        //将点击事件传出去（流行，新款，精选）
+        this.$emit('tabClick', index)
       }
     }
   }

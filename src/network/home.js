@@ -6,3 +6,15 @@ export function getHomeMultidata() {
   })
 }
 
+//首页下面的商品
+export function getHomeGoods(type, page) {
+  return request({
+    url: '/home/data',
+    params: {
+      type,
+      page
+    }
+  })
+
+}
+

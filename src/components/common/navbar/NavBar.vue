@@ -13,6 +13,7 @@
 </script>
 
 <style scoped>
+
   .nav-bar {
     display: flex;
     height: 44px;
@@ -28,4 +29,6 @@
   .center {
     flex: 1;
   }
+
+
 </style>

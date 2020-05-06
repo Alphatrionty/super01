@@ -1,14 +1,19 @@
 <template>
   <div id="home">
     <nav-bar class="home-nav"><div slot="center">购物街</div></nav-bar>
-    <home-swiper :banners="banners"></home-swiper>
-    <recommend-view :recommends="recommends"></recommend-view>
-    <FeatureView></FeatureView>
-    <tab-control class="tab-control"
-                 :titles="['流行', '新款', '精选']"
-                 @tabClick="tabClick"></tab-control>
-    <goods-list :goods="showGoods"></goods-list>
 
+    <scroll class="content" ref="scroll" :probe-type="3" @scroll="contentScroll">
+      <home-swiper :banners="banners"></home-swiper>
+      <recommend-view :recommends="recommends"></recommend-view>
+      <FeatureView></FeatureView>
+      <tab-control class="tab-control"
+                   :titles="['流行', '新款', '精选']"
+                   @tabClick="tabClick"></tab-control>
+      <goods-list :goods="showGoods"></goods-list>
+    </scroll>
+
+<!--    native 监听组件的点击-->
+    <back-top @click.native="backClick" v-show="isshowBackTop"></back-top>
 
   </div>
 </template>
@@ -22,6 +27,8 @@
   import NavBar from "../../components/common/navbar/NavBar";
   import TabControl from "../../components/content/tabControl/TabControl";
   import GoodsList from "../../components/content/goods/GoodsList";
+  import Scroll from "../../components/common/scroll/Scroll";
+  import BackTop from "../../components/content/backTop/BackTop";
 
   import {getHomeMultidata, getHomeGoods} from "../../network/home";
 
@@ -35,7 +42,9 @@
       RecommendView,
       FeatureView,
       TabControl,
-      GoodsList
+      GoodsList,
+      Scroll,
+      BackTop
     },
     data() {
       return {
@@ -47,10 +56,11 @@
           'sell': {page: 0, list: []},
         },
         currentType: 'pop',
-        isshow: false,
-        tabOffsetTop: 0,
-        isTabFxid: false,
-        itemImageListener: null,
+        //决定返回按钮的显示和隐藏
+        isshowBackTop: false,
+        // tabOffsetTop: 0,
+        // isTabFxid: false,
+        // itemImageListener: null,
       }
     },
     computed: {
@@ -84,6 +94,14 @@
             break
         }
       },
+      backClick() {
+        //第三个传入毫秒，回到顶部的时间
+        this.$refs.scroll.scrollTo(0, 0, 500)
+      },
+      contentScroll(position) {
+        //返回顶部按钮的隐藏和显示
+        this.isshowBackTop = -position.y > 1000
+      },
       /**
        *网络请求相关的方法
        */
@@ -107,7 +125,10 @@
 
 <style scoped>
   #home {
-    padding-top: 44px;
+    /*padding-top: 44px;*/
+
+    /*viewport height 视高*/
+    height: 100vh;
   }
 
   .home-nav {
@@ -123,8 +144,15 @@
 
   .tab-control {
     /*实现停留效果*/
-    position: sticky;
+    /*position: sticky;*/
     top: 44px;
+    z-index: 9;
+  }
+
+  .content {
+    height: calc(100% - 93px);
+    overflow: hidden;
+    margin-top: 44px;
   }
 
 </style>

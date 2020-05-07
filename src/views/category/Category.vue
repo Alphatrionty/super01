@@ -3,8 +3,7 @@
     <nav-bar class="category-nav"><div slot="center">分类</div></nav-bar>
 
 
-      <category-left :list="showlist"></category-left>
-
+<!--      <category-left :category="category"></category-left>-->
 
   </div>
 </template>
@@ -34,17 +33,17 @@
       NavBar,
       Scroll,
     },
-    computed: {
-      showlist() {
-        return this.category
-      }
-    },
+    // computed: {
+    //   showlist() {
+    //     return this.category
+    //   }
+    // },
     created() {
       //  1 请求多个数据
       this.getCategorydata()
     },
     //组件创建完后调用
-    mounted() {
+    // mounted() {
       // this.scroll = new BScroll(document.querySelector('.wrapper'), {
       //   probeType: 3,
       //   pullUpLoad: true,
@@ -59,17 +58,17 @@
       //
       // })
       // getCategorydata ()
-    },
+    // },
     methods: {
-      btnClick() {
+      // btnClick() {
         // console.log('btnClick');
-      },
+      // },
       /**
        *网络请求相关的方法
        */
       getCategorydata() {
         getCategorydata().then(res => {
-          console.log(res);
+          // console.log(res);
           this.category = res.data.category.list;
         })
       }

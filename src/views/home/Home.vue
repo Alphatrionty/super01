@@ -2,7 +2,11 @@
   <div id="home">
     <nav-bar class="home-nav"><div slot="center">购物街</div></nav-bar>
 
-    <scroll class="content" ref="scroll" :probe-type="3" @scroll="contentScroll">
+    <scroll class="content"
+            ref="scroll"
+            :probe-type="3"
+            @scroll="contentScroll"
+            :pull-up-load="true">
       <home-swiper :banners="banners"></home-swiper>
       <recommend-view :recommends="recommends"></recommend-view>
       <FeatureView></FeatureView>
@@ -72,15 +76,35 @@
     //  1 请求多个数据
       this.getHomeMultidata()
 
-    //  请求商品数据
+    //  2 请求商品数据
       this.getHomeGoods('pop')
       this.getHomeGoods('new')
       this.getHomeGoods('sell')
+
+    },
+    mounted() {
+      //   监听item中图片加载完成
+      this.$bus.$on('itemImageLoad', () => {
+        this.$refs.scroll.refresh()
+      })
     },
     methods: {
       /**
       *事件监听相关的方法
        */
+      //防抖
+      debounce(func, delay) {
+        let tiemr = null
+
+        return function (...args) {
+          if(time) clearTimeout(timer)
+
+          timer = setTimeout(() => {
+            func.apply(this, args)
+          }, delay)
+        }
+      },
+
       tabClick(index) {
         switch (index) {
           case 0:
@@ -107,7 +131,7 @@
        */
       getHomeMultidata() {
         getHomeMultidata().then(res => {
-          // console.log(res);
+          // console.log(res.data.banner.list);
           this.banners = res.data.banner.list;
           this.recommends = res.data.recommend.list;
         })

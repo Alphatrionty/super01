@@ -30,7 +30,8 @@
         click: true,
         //使用实时监听会影响性能,有些页面不需要使用，不要直接定义为3
         // probeType: 3
-        probeType: this.probeType
+        probeType: this.probeType,
+        pullUpLoad: this.pullUpLoad
       })
 
     //  2.监听滚动的位置
@@ -38,11 +39,22 @@
         //传出位置属性事件,命名为scroll
         this.$emit('scroll', position)
       })
+
+      //刷新高度
+      this.scroll.refresh()
     },
     methods: {
       //传入默认值
       scrollTo(x, y, time =300) {
-        this.scroll.scrollTo(x, y, time)
+        //判断前面的加载好了没，加载好才调用，否则可能出现buf
+        this.scroll && this.scroll.scrollTo(x, y, time)
+      },
+      finishPullUp() {
+        //封装一层上拉加载函数,在home调用
+        this.scroll.finishPullUp()
+      },
+      refresh() {
+        this.scroll && this.scroll.refresh()
       }
     }
   }

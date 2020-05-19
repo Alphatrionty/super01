@@ -6,13 +6,14 @@
             ref="scroll"
             :probe-type="3"
             @scroll="contentScroll"
-            :pull-up-load="true">
+            :pull-up-load="true"
+            @pullingUp="loadMore">
       <home-swiper :banners="banners"></home-swiper>
       <recommend-view :recommends="recommends"></recommend-view>
       <FeatureView></FeatureView>
-      <tab-control class="tab-control"
-                   :titles="['流行', '新款', '精选']"
-                   @tabClick="tabClick"></tab-control>
+      <tab-control :titles="['流行', '新款', '精选']"
+                   @tabClick="tabClick"
+                   ref="tabControl"></tab-control>
       <goods-list :goods="showGoods"></goods-list>
     </scroll>
 
@@ -35,7 +36,7 @@
   import BackTop from "../../components/content/backTop/BackTop";
 
   import {getHomeMultidata, getHomeGoods} from "../../network/home";
-
+  import {debounce} from "../../common/utils";
 
 
   export default {
@@ -62,7 +63,8 @@
         currentType: 'pop',
         //决定返回按钮的显示和隐藏
         isshowBackTop: false,
-        // tabOffsetTop: 0,
+        //吸顶效果，拿到属性
+        tabOffsetTop: 0,
         // isTabFxid: false,
         // itemImageListener: null,
       }
@@ -81,30 +83,26 @@
       this.getHomeGoods('new')
       this.getHomeGoods('sell')
 
+
     },
     mounted() {
+      //1 图片加载完的事件监听
+      const refresh = debounce(this.$refs.scroll.refresh, 50)
       //   监听item中图片加载完成
       this.$bus.$on('itemImageLoad', () => {
-        this.$refs.scroll.refresh()
+        // this.$refs.scroll.refresh()
+        // console.log('---');
+        refresh()
       })
+
+      //  2 吸顶效果，赋值,获取tabControl的offsetTop
+      // 所有组件都有一个属性$el 用于获取组件中的属性
+      this.tabOffsetTop = this.$refs.tabControl.$el.offsetTop;
     },
     methods: {
       /**
       *事件监听相关的方法
        */
-      //防抖
-      debounce(func, delay) {
-        let tiemr = null
-
-        return function (...args) {
-          if(time) clearTimeout(timer)
-
-          timer = setTimeout(() => {
-            func.apply(this, args)
-          }, delay)
-        }
-      },
-
       tabClick(index) {
         switch (index) {
           case 0:
@@ -126,6 +124,10 @@
         //返回顶部按钮的隐藏和显示
         this.isshowBackTop = -position.y > 1000
       },
+      loadMore() {
+        // console.log('加载更多');
+        this.getHomeGoods(this.currentType)
+      },
       /**
        *网络请求相关的方法
        */
@@ -141,6 +143,9 @@
         getHomeGoods(type,page).then(res => {
           this.goods[type].list.push(...res.data.list)
           this.goods[type].page += 1
+
+        //  完成上拉加载更多,调用下次加载，刷新scroll高度
+          this.$refs.scroll.finishPullUp()
         })
       }
     }
@@ -163,13 +168,6 @@
     left: 0;
     right: 0;
     top: 0;
-    z-index: 9;
-  }
-
-  .tab-control {
-    /*实现停留效果*/
-    /*position: sticky;*/
-    top: 44px;
     z-index: 9;
   }
 

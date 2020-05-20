@@ -1,19 +1,23 @@
 <template>
   <div id="home">
     <nav-bar class="home-nav"><div slot="center">购物街</div></nav-bar>
-
+    <tab-control :titles="['流行', '新款', '精选']"
+                 @tabClick="tabClick"
+                 ref="tabControl1"
+                 class="tab-control"
+                 v-show="isTabFixd"></tab-control>
     <scroll class="content"
             ref="scroll"
             :probe-type="3"
             @scroll="contentScroll"
             :pull-up-load="true"
             @pullingUp="loadMore">
-      <home-swiper :banners="banners"></home-swiper>
+      <home-swiper :banners="banners" @swiperImageLoad="swiperImageLoad"></home-swiper>
       <recommend-view :recommends="recommends"></recommend-view>
       <FeatureView></FeatureView>
       <tab-control :titles="['流行', '新款', '精选']"
                    @tabClick="tabClick"
-                   ref="tabControl"></tab-control>
+                   ref="tabControl2"></tab-control>
       <goods-list :goods="showGoods"></goods-list>
     </scroll>
 
@@ -65,7 +69,9 @@
         isshowBackTop: false,
         //吸顶效果，拿到属性
         tabOffsetTop: 0,
-        // isTabFxid: false,
+        isTabFixd: false,
+        //保存当前滚动位置，新版betterscroll已经修复
+        // saveY: 0
         // itemImageListener: null,
       }
     },
@@ -85,19 +91,37 @@
 
 
     },
+    //保存首页位置信息,新版betterscroll已经修复切换页面回到顶部问题
+    // activated() {
+    //   this.$refs.scroll.scrollTo(0, this.saveY, 0)
+    //   this.$refs.scroll.refresh()
+    // },
+    // deactivated() {
+    //   this.saveY = this.$refs.scroll.scroll.y
+    // },
+    // deactivated() {
+    // //  取消全局事件监听
+    //   this.$bus.$off('itemImgLoad', this.itemImageListener)
+    // },
+
+    //挂载组件时
     mounted() {
       //1 图片加载完的事件监听
-      const refresh = debounce(this.$refs.scroll.refresh, 50)
+      const refresh = debounce(this.$refs.scroll.refresh, 80)
+      // 对监听事件进行保存
+      // this.itemImageListener = () => {
+      //   refresh(20, 30, 'abc')
+      // }
       //   监听item中图片加载完成
-      this.$bus.$on('itemImageLoad', () => {
+      // this.$bus.$on('itemImageLoad', this.itemImageListener)
+
+      this.$bus.$on('imageLoad', () => {
         // this.$refs.scroll.refresh()
         // console.log('---');
         refresh()
       })
 
-      //  2 吸顶效果，赋值,获取tabControl的offsetTop
-      // 所有组件都有一个属性$el 用于获取组件中的属性
-      this.tabOffsetTop = this.$refs.tabControl.$el.offsetTop;
+
     },
     methods: {
       /**
@@ -115,14 +139,19 @@
             this.currentType = 'sell'
             break
         }
+        this.$refs.tabControl1.currentIndex = index;
+        this.$refs.tabControl2.currentIndex = index;
       },
       backClick() {
         //第三个传入毫秒，回到顶部的时间
         this.$refs.scroll.scrollTo(0, 0, 500)
       },
       contentScroll(position) {
-        //返回顶部按钮的隐藏和显示
-        this.isshowBackTop = -position.y > 1000
+        //1 返回顶部按钮的隐藏和显示
+        this.isshowBackTop = (-position.y) > 1000
+
+      //  2 决定tabControl是否吸顶（positrion: fixed)
+        this.isTabFixd = (-position.y) > this.tabOffsetTop
       },
       loadMore() {
         // console.log('加载更多');
@@ -147,6 +176,13 @@
         //  完成上拉加载更多,调用下次加载，刷新scroll高度
           this.$refs.scroll.finishPullUp()
         })
+      },
+      swiperImageLoad() {
+        //  2 吸顶效果，赋值,获取tabControl的offsetTop
+        // 所有组件都有一个属性$el 用于获取组件中的属性
+        this.tabOffsetTop = this.$refs.tabControl2.$el.offsetTop;
+        //高度
+        // console.log(this.$refs.tabControl.$el.offsetTop)
       }
     }
   }
@@ -164,17 +200,29 @@
     background-color: var(--color-tint);
     color: white;
 
-    position: fixed;
-    left: 0;
-    right: 0;
-    top: 0;
-    z-index: 9;
+    /*游览器原生滚动*/
+    /*position: fixed;*/
+    /*left: 0;*/
+    /*right: 0;*/
+    /*top: 0;*/
+    /*z-index: 9;*/
   }
 
   .content {
     height: calc(100% - 93px);
+    position: absolute;
     overflow: hidden;
-    margin-top: 44px;
+    /*margin-top: 44px;*/
+    top: 44px;
+    bottom: 49px;
+    left: 0;
+    right: 0;
+  }
+
+  .tab-control {
+    /*相对定位*/
+    position: relative;
+    z-index: 9;
   }
 
 </style>

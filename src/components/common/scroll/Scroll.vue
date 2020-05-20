@@ -67,7 +67,7 @@
         this.scroll && this.scroll.finishPullUp()
       },
       refresh() {
-        console.log('刷新scroll高度');
+        // console.log('刷新scroll高度');
         this.scroll && this.scroll.refresh()
       }
     }
